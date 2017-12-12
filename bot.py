@@ -25,7 +25,7 @@ def get_page(week='', group='K3142'):
 def get_schedule(web_page, day):
     soup = BeautifulSoup(web_page, "html5lib")
     # Получаем таблицу с расписанием на день недели
-    schedule_table = soup.find("table", attrs={"id": "1day"})
+    #schedule_table = soup.find("table", attrs={"id": "1day"})
     if day == '/monday' or day == '/sunday' or day == '/Monday' or day == '/Sunday':
         schedule_table = soup.find("table", attrs={"id": "1day"})
     elif day == '/tuesday' or day == '/Tuesday':
@@ -116,7 +116,7 @@ def get_tomorrow(message):
     times_lst, locations_lst, lessons_lst = schedule
     resp = '<b>Расписание на завтра:\n\n</b>'
     for time, location, lesson in zip(times_lst, locations_lst, lessons_lst):
-        resp += '<b>{}</b>, {}, {}\n'.format(time, location, lesson)n)
+        resp += '<b>{}</b>, {}, {}\n'.format(time, location, lesson)
 
     bot.send_message(message.chat.id, resp, parse_mode='HTML')
 
@@ -173,51 +173,51 @@ def get_next_lesson(message):
     times_lst, locations_lst, lessons_lst = schedule
     cnt = 0
     state = 0
-    for i in times_list:
-        _, time = i.split('-')
+    for i in times_lst:
+        time, _ = i.split('-')
         t1, t2 = time.split(':')
         time = int(t1 + t2)
         cur_time = int(str(datetime.datetime.now().hour) + str(datetime.datetime.now().minute))
         if cur_time < time:
             resp = '<b>Ближайшая пара сегодня:</b>\n'
-            resp += '<b>{}</b>, {}, {}\n'.format(times_list[cnt], locations_lst[cnt], lessons_lst[cnt])
+            resp += '<b>{}</b>, {}, {}\n'.format(times_lst[cnt], locations_lst[cnt], lessons_lst[cnt])
             bot.send_message(message.chat.id, resp, parse_mode='HTML')
             state = 1
             break
         cnt +=1
-        if not state:
-            today = datetime.datetime.now()
-            tomorrow = today
-            if today.weekday() == 5:
-                tomorrow += datetime.timedelta(days=2)
-            else:
-                tomorrow += datetime.timedelta(days=1)
+    if not state:
+        today = datetime.datetime.now()
+        tomorrow = today
+        if today.weekday() == 5:
+            tomorrow += datetime.timedelta(days=2)
+        else:
+            tomorrow += datetime.timedelta(days=1)
 
-            if tomorrow.weekday() == 0:
-                tomorrow = '/monday'
-            elif tomorrow.weekday() == 1:
-                tomorrow = '/tuesday'
-            elif tomorrow.weekday() == 2:
-                tomorrow = '/wednesday'
-            elif tomorrow.weekday() == 3:
-                tomorrow = '/thursday'
-            elif tomorrow.weekday() == 4:
-                tomorrow = '/friday'
-            elif tomorrow.weekday() == 5:
-                tomorrow = '/saturday'
-            schedule = get_schedule(web_page, tomorrow)
-            if not schedule:
-                bot.send_message(message.chat.id, 'Ошибка')
-                return None
+        if tomorrow.weekday() == 0:
+            tomorrow = '/monday'
+        elif tomorrow.weekday() == 1:
+            tomorrow = '/tuesday'
+        elif tomorrow.weekday() == 2:
+            tomorrow = '/wednesday'
+        elif tomorrow.weekday() == 3:
+            tomorrow = '/thursday'
+        elif tomorrow.weekday() == 4:
+            tomorrow = '/friday'
+        elif tomorrow.weekday() == 5:
+            tomorrow = '/saturday'
+        schedule = get_schedule(web_page, tomorrow)
+        if not schedule:
+            bot.send_message(message.chat.id, 'Ошибка')
+            return None
 
-            times_lst, locations_lst, lessons_lst = schedule
-            resp = '<b>{}</b>, {}, {}\n'.format(times_lst[0], locations_lst[0], lessons_lst[0])
-            bot.send_message(message.chat.id, resp, parse_mode='HTML')
+        times_lst, locations_lst, lessons_lst = schedule
+        resp = '<b>{}</b>, {}, {}\n'.format(times_lst[0], locations_lst[0], lessons_lst[0])
+        bot.send_message(message.chat.id, resp, parse_mode='HTML')
 
-    # if __name__ == '__main__':
-    # bot.polling(none_stop=True)
-    while True:
-        try:
-            bot.polling(none_stop=True)
-        except:
-            time.sleep(5)
+# if __name__ == '__main__':
+# bot.polling(none_stop=True)
+while True:
+    try:
+        bot.polling(none_stop=True)
+    except:
+        time.sleep(5)
