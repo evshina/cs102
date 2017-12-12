@@ -38,6 +38,8 @@ def get_schedule(web_page, day):
         schedule_table = soup.find("table", attrs={"id": "5day"})
     elif day == '/saturday' or day == '/Saturday':
         schedule_table = soup.find("table", attrs={"id": "6day"})
+    if not schedule_table:
+        return None
     # Время проведения занятий
     times_list = schedule_table.find_all("td", attrs={"class": "time"})
     times_list = [time.span.text for time in times_list]
@@ -67,7 +69,12 @@ def get_week(message):
     visual_list = ['Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота']
     for i in range(6):
         resp += '<b>' + visual_list[i] + '</b>' + ':\n'
-        times_lst, locations_lst, lessons_lst = get_schedule(web_page, week_list[i])
+        schedule = get_schedule(web_page, week_list[i])
+        if not schedule:
+            bot.send_message(message.chat.id, 'Ошибка')
+            return None
+
+        times_lst, locations_lst, lessons_lst = schedule
 
         for time, location, lesson in zip(times_lst, locations_lst, lessons_lst):
             resp += '<b>{}</b>, {}, {}\n'.format(time, location, lesson)
@@ -101,10 +108,15 @@ def get_tomorrow(message):
         tomorrow = '/friday'
     elif tomorrow.weekday() == 5:
         tomorrow = '/saturday'
-    times_lst, locations_lst, lessons_lst = get_schedule(web_page, tomorrow)
+    schedule = get_schedule(web_page, tomorrow)
+    if not schedule:
+        bot.send_message(message.chat.id, 'Ошибка')
+        return None
+
+    times_lst, locations_lst, lessons_lst = schedule
     resp = '<b>Расписание на завтра:\n\n</b>'
     for time, location, lesson in zip(times_lst, locations_lst, lessons_lst):
-        resp += '<b>{}</b>, {}, {}\n'.format(time, location, lesson)
+        resp += '<b>{}</b>, {}, {}\n'.format(time, location, lesson)n)
 
     bot.send_message(message.chat.id, resp, parse_mode='HTML')
 
@@ -114,7 +126,12 @@ def get_tomorrow(message):
 def get_day(message):
     day, week, group = message.text.split()
     web_page = get_page(week, group)
-    times_lst, locations_lst, lessons_lst = get_schedule(web_page, day)
+    schedule = get_schedule(web_page, day)
+    if not schedule:
+        bot.send_message(message.chat.id, 'Ошибка')
+        return
+
+    times_lst, locations_lst, lessons_lst = schedule
 
     resp = ''
     for time, location, lesson in zip(times_lst, locations_lst, lessons_lst):
@@ -148,7 +165,12 @@ def get_next_lesson(message):
     else:
         week = 1
     web_page = get_page(week, group)
-    times_list, locations_lst, lessons_lst = get_schedule(web_page, today)
+    schedule = get_schedule(web_page, today)
+    if not schedule:
+        bot.send_message(message.chat.id, 'Ошибка')
+        return None
+
+    times_lst, locations_lst, lessons_lst = schedule
     cnt = 0
     state = 0
     for i in times_list:
@@ -163,14 +185,39 @@ def get_next_lesson(message):
             state = 1
             break
         cnt +=1
-    if not state:
-        bot.send_message(message.chat.id, 'Сегодня пар больше нет :) Можно отдыхать!')
+        if not state:
+            today = datetime.datetime.now()
+            tomorrow = today
+            if today.weekday() == 5:
+                tomorrow += datetime.timedelta(days=2)
+            else:
+                tomorrow += datetime.timedelta(days=1)
 
+            if tomorrow.weekday() == 0:
+                tomorrow = '/monday'
+            elif tomorrow.weekday() == 1:
+                tomorrow = '/tuesday'
+            elif tomorrow.weekday() == 2:
+                tomorrow = '/wednesday'
+            elif tomorrow.weekday() == 3:
+                tomorrow = '/thursday'
+            elif tomorrow.weekday() == 4:
+                tomorrow = '/friday'
+            elif tomorrow.weekday() == 5:
+                tomorrow = '/saturday'
+            schedule = get_schedule(web_page, tomorrow)
+            if not schedule:
+                bot.send_message(message.chat.id, 'Ошибка')
+                return None
 
-# if __name__ == '__main__':
-#     bot.polling(none_stop=True)
-while True:
-    try:
-      bot.polling(none_stop=True)
-    except:
-        time.sleep(5)
+            times_lst, locations_lst, lessons_lst = schedule
+            resp = '<b>{}</b>, {}, {}\n'.format(times_lst[0], locations_lst[0], lessons_lst[0])
+            bot.send_message(message.chat.id, resp, parse_mode='HTML')
+
+    # if __name__ == '__main__':
+    # bot.polling(none_stop=True)
+    while True:
+        try:
+            bot.polling(none_stop=True)
+        except:
+            time.sleep(5)
