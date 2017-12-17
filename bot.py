@@ -193,25 +193,51 @@ def get_next_lesson(message):
         else:
             tomorrow += datetime.timedelta(days=1)
 
+        schedule = False
+        i = 0
+        while not schedule:
+            if tomorrow.weekday() == 0:
+                schedule = get_schedule(web_page, '/monday')
+                if not schedule:
+                    tomorrow += datetime.timedelta(days=1)
+            elif tomorrow.weekday() == 1:
+                schedule = get_schedule(web_page, '/tuesday')
+                if not schedule:
+                    tomorrow += datetime.timedelta(days=1)
+            elif tomorrow.weekday() == 2:
+                schedule = get_schedule(web_page, '/wednesday')
+                if not schedule:
+                    tomorrow += datetime.timedelta(days=1)
+            elif tomorrow.weekday() == 3:
+                schedule = get_schedule(web_page, '/thursday')
+                if not schedule:
+                    tomorrow += datetime.timedelta(days=1)
+            elif tomorrow.weekday() == 4:
+                schedule = get_schedule(web_page, '/friday')
+                if not schedule:
+                    tomorrow += datetime.timedelta(days=1)
+            elif tomorrow.weekday() == 5:
+                schedule = get_schedule(web_page, '/saturday')
+                if not schedule:
+                    tomorrow += datetime.timedelta(days=1)
+
+        dayT = ''
         if tomorrow.weekday() == 0:
-            tomorrow = '/monday'
+            dayT += 'Понедельник'
         elif tomorrow.weekday() == 1:
-            tomorrow = '/tuesday'
+            dayT += 'Вторник'
         elif tomorrow.weekday() == 2:
-            tomorrow = '/wednesday'
+            dayT += 'Среда'
         elif tomorrow.weekday() == 3:
-            tomorrow = '/thursday'
+            dayT += 'Четверг'
         elif tomorrow.weekday() == 4:
-            tomorrow = '/friday'
+            dayT += 'Пятница'
         elif tomorrow.weekday() == 5:
-            tomorrow = '/saturday'
-        schedule = get_schedule(web_page, tomorrow)
-        if not schedule:
-            bot.send_message(message.chat.id, 'Ошибка')
-            return None
+            dayT += 'Суббота'
 
         times_lst, locations_lst, lessons_lst = schedule
-        resp = '<b>{}</b>, {}, {}\n'.format(times_lst[0], locations_lst[0], lessons_lst[0])
+        resp = '<b>Ближайшая пара (' + dayT + '):</b>\n'
+        resp += '<b>{}</b>, {}, {}\n'.format(times_lst[0], locations_lst[0], lessons_lst[0])
         bot.send_message(message.chat.id, resp, parse_mode='HTML')
 
 # if __name__ == '__main__':
