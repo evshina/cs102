@@ -17,6 +17,8 @@ def echo(message):
     return None
 '''
 headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/61.0.3163.100 YaBrowser/17.10.1.1204 Yowser/2.5 Safari/537.36'}
+
+
 @bot.message_handler(commands=['start'])
 def startBot(message):
     key = types.ReplyKeyboardMarkup()
@@ -28,6 +30,7 @@ Genre = '0'
 YearSt = '0'
 YearEn = '0'
 Contry = '0'
+
 
 @bot.message_handler(content_types=['text'])
 def inline(message):
@@ -59,12 +62,11 @@ def inline(message):
 
 def getFilters(message):
     key = types.ReplyKeyboardMarkup()
-    key.row('G:Криминал', 'G:Фентези', 'G:Детектив')
+    key.row('G:Криминал', 'G:Фэнтези', 'G:Детектив')
     key.row('G:Триллер', 'G:Мультфильм', 'G:Боевик')
     key.row('G:Комедия', 'G:Ужасы', 'G:Драма')
     key.row('К началу')
     bot.send_message(message.chat.id, 'Выберите жанр', reply_markup=key)
-
 
 
 def getGenre(message):
@@ -73,7 +75,7 @@ def getGenre(message):
     key = types.ReplyKeyboardMarkup()
     key.row('К началу')
     bot.send_message(message.chat.id, 'Введите веременной период через <b>подчёркивание</b>, '
-                                      'например\n<b>1995_2005</b>',parse_mode='HTML', reply_markup=key)
+                                      'например\n<b>1995_2005</b>', parse_mode='HTML', reply_markup=key)
 
 
 def getYear(message):
@@ -125,7 +127,7 @@ def getFilmsFilters(message):
 
     if genre == 'Криминал':
         genre = '16'
-    elif genre == 'Фентези':
+    elif genre == 'Фэнтези':
         genre = '5'
     elif genre == 'Детектив':
         genre = '17'
@@ -155,9 +157,9 @@ def getFilmsFilters(message):
 def getScheduleFilters(Web_page, message):
     try:
         web_page = Web_page
-        table = web_page.find('div', attrs={'id':'itemList'}).find_all('div', attrs={'class':'item _NO_HIGHLIGHT_'})
+        table = web_page.find('div', attrs={'id': 'itemList'}).find_all('div', attrs={'class':'item _NO_HIGHLIGHT_'})
         num = random.randint(0, 99)
-        text_info = table[num].find('div', attrs={'class':'info'})
+        text_info = table[num].find('div', attrs={'class': 'info'})
         title = text_info.find('div', attrs={'class': 'name'}).find('a').get_text()
         others = text_info.find('div', attrs={'class': 'name'}).find('span').get_text()
         try:
@@ -203,11 +205,11 @@ def getFilmTop(message):
     url = config.domainTop
     web_page = requests.get(url).text
     web_page = BeautifulSoup(web_page, 'html5lib')
-    table = web_page.find('table', attrs={'id':'itemList'}).find_all('tr')
-    num = random.randint(0,99)
+    table = web_page.find('table', attrs={'id': 'itemList'}).find_all('tr')
+    num = random.randint(0, 99)
     film_info = table[num]
-    title = film_info.find('a', attrs={'class':'all'}).get_text()
-    others = film_info.find('span', attrs={'style':'color: #888; font-family: arial; font-size: 11px;'
+    title = film_info.find('a', attrs={'class': 'all'}).get_text()
+    others = film_info.find('span', attrs={'style': 'color: #888; font-family: arial; font-size: 11px;'
                                                        ' display: block'}).get_text()
     try:
         alter_name, _ = others.split(' (')
@@ -227,7 +229,7 @@ def getFilmTop(message):
     producer = producer.replace('  ', '')
     genres, _ = others.split(')')
     _, genres = genres.split('(')
-    url = config.defaultURL + film_info.find('a', attrs={'class':'all'}).get('href')
+    url = config.defaultURL + film_info.find('a', attrs={'class': 'all'}).get('href')
     _, id = film_info.find('img').get('title').split('sm_film/')
     id, _ = id.split('.')
     img_url = 'https://st.kp.yandex.net/images/film_iphone/iphone360_{0}.jpg'.format(id)
@@ -275,11 +277,10 @@ def getScheduleRandom(Web_page, message):
 
     producer = all_info.find('div', attrs={'class': 'm-margin-btm'}).find('span').get_text()
 
-    others= all_info.find('span', attrs={'class': 'creation'}).get_text()[:-1].split(', ')
+    others = all_info.find('span', attrs={'class': 'creation'}).get_text()[:-1].split(', ')
     contry = others[0]
     time = others[-1]
     year = others[-2]
-
 
     url_yt = 'https://www.youtube.com/results?search_query='
     title_yt = titleNew.replace(' ', '+')
@@ -341,7 +342,7 @@ def getFilmBySearch(message):
 
 def getScheduleSearch(web_page):
     try:
-        #К сожалению, по вашему запросу ничего не найдено...
+        # К сожалению, по вашему запросу ничего не найдено...
         web_page, message = web_page
         web = BeautifulSoup(web_page, "html5lib")
 
@@ -353,7 +354,7 @@ def getScheduleSearch(web_page):
 
         title = all_info.find("a", attrs={"class": "js-serp-metrika"}).get_text()
         year = all_info.find("span", attrs={'class':'year'}).get_text()
-        grey_info = all_info.find_all('span', attrs={'class':'gray'})[:-1]
+        grey_info = all_info.find_all('span', attrs={'class': 'gray'})[:-1]
         try:
             alter_name, time = grey_info[0].get_text().split(', ')
         except:
@@ -388,7 +389,6 @@ def getScheduleSearch(web_page):
         bot.send_message(message.chat.id, film_text, parse_mode='HTML')
     except:
         bot.send_message(message.chat.id, 'Сори, я не смог найти такой фильм 😓', parse_mode='HTML')
-
 
 
 def recommendFilm(message):
